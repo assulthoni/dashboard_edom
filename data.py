@@ -3,12 +3,11 @@ username_pass = {
 }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        "USER" : 'suraudat_edomprodi',
-        "NAME" : 'suraudat_edom',
-        "PASSWORD" : 'sisteminformasi',
+        "USER" : 'edom',
+        "NAME" : 'edom',
+        "PASSWORD" : 'edomprodi123',
         "HOST" : "localhost",
-        "PORT" : "5432"
+        "PORT" : "3306"
     }
 }
 MATKUL_DOSEN = {'PEMROGRAMAN BERBASIS WEB': ['nan'],

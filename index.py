@@ -17,7 +17,6 @@ VALID_USERNAME_PASSWORD_PAIRS = username_pass
 
 app = dash.Dash(__name__,
                 external_stylesheets=[dbc.themes.BOOTSTRAP],
-                url_base_pathname='/dashboard',
                 )
 server = app.server
 app.config.suppress_callback_exceptions = True

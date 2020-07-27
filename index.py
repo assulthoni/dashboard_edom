@@ -5,7 +5,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-import dash_auth
 from .kualitatif import Kualitatif, TABLENAME_KUALITATIF
 from .kuantitatif import Kuantitatif, TABLENAME_KUANTITATIF
 from .data import username_pass, KODE_NAMA_LENGKAP_DOSEN
@@ -30,10 +29,6 @@ app.layout = html.Div([
 ])
 app.title = "Dashboard EDOM SI"
 
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
 
 
 def transform_kuantitatif(df):

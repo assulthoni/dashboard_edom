@@ -5,10 +5,10 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from .kualitatif import Kualitatif, TABLENAME_KUALITATIF
-from .kuantitatif import Kuantitatif, TABLENAME_KUANTITATIF
-from .data import username_pass, KODE_NAMA_LENGKAP_DOSEN
-from .app import select_by_semester
+from kualitatif import Kualitatif, TABLENAME_KUALITATIF
+from kuantitatif import Kuantitatif, TABLENAME_KUANTITATIF
+from data import username_pass, KODE_NAMA_LENGKAP_DOSEN
+from app import select_by_semester
 import warnings
 
 warnings.filterwarnings('ignore')

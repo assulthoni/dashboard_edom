@@ -241,16 +241,23 @@ BODY = dbc.Container(
                                                                         'color': 'white'
                                                                     }
                                                                 ],
+                                                                css=[{
+                                                                'selector': '.dash-spreadsheet td div',
+                                                                'rule': '''
+                                                                line-height: 15px;
+                                                                max-height: 30px; min-height: 30px; height: 30px;
+                                                                display: block;
+                                                                overflow-y: hidden;
+                                                                '''
+                                                                }],
+                                                                tooltip_duration=None,
+
+                                                                style_cell={'textAlign': 'left'},
                                                                 page_current=0,
                                                                 page_size=5,
                                                                 page_action='custom'
-                                                            )
-                                                        ]
-                                                    )
-                                                ),
-                                                dbc.Card(
-                                                    dbc.CardBody(
-                                                        [
+                                                            ),
+                                                            html.Hr(),
                                                             html.H4("Daftar Dosen Dibawah KM",
                                                                     className="card-title"),
                                                             dt.DataTable(
@@ -271,6 +278,16 @@ BODY = dbc.Container(
                                                                         'color': 'white'
                                                                     }
                                                                 ],
+                                                                css=[{
+                                                                'selector': '.dash-spreadsheet td div',
+                                                                'rule': '''
+                                                                line-height: 15px;
+                                                                max-height: 30px; min-height: 30px; height: 30px;
+                                                                display: block;
+                                                                overflow-y: hidden;
+                                                                '''
+                                                                }],
+                                                                tooltip_duration=None,
                                                                 page_current=0,
                                                                 page_size=5,
                                                                 page_action='custom'

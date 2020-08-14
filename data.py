@@ -3,6 +3,15 @@ username_pass = {
 }
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        "USER" : 'suraudat_edomprodi',
+        "NAME" : 'suraudat_edom',
+        "PASSWORD" : 'sisteminformasi',
+        "HOST" : "localhost",
+        "PORT" : "5432"
+    },
+    'mysql': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         "USER" : 'edom',
         "NAME" : 'edom',
         "PASSWORD" : 'edomprodi123',

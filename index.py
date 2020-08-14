@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 from kualitatif import Kualitatif, TABLENAME_KUALITATIF
 from kuantitatif import Kuantitatif, TABLENAME_KUANTITATIF
 from data import username_pass, KODE_NAMA_LENGKAP_DOSEN
-from app import select_by_semester
+from app import select_kuantitatif_table, select_by_semester
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -30,20 +30,19 @@ app.title = "Dashboard EDOM SI"
 
 
 
-def transform_kuantitatif(df):
-    df_t = df[['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE', 'SUBJECTNAME',
-               'CLASS', 'QUESTIONCATEGORY',
-               'QUESTION']].join(pd.get_dummies(df['ANSWER'])
-                                 ).groupby(['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE', 'SUBJECTNAME',
-                                            'CLASS', 'QUESTIONCATEGORY',
-                                            'QUESTION']).sum()
-    df_t['skor'] = (((df_t['Sangat puas'] * 4) + (df_t['Puas'] * 3)
-                     + (df_t['Tidak puas'] * 2) + (df_t['Sangat tidak puas'] * 1)) /
-                    (df_t['Sangat puas'] + df_t['Puas'] + df_t['Tidak puas']
-                     + df_t['Sangat tidak puas'])) * 25
-    df_t.reset_index(inplace=True)
-    return df_t
-
+# def transform_kuantitatif(df):
+#     df_t = df[['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE', 'SUBJECTNAME',
+#                'CLASS', 'QUESTIONCATEGORY',
+#                'QUESTION']].join(pd.get_dummies(df['ANSWER'])
+#                                  ).groupby(['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE', 'SUBJECTNAME',
+#                                             'CLASS', 'QUESTIONCATEGORY',
+#                                             'QUESTION']).sum()
+#     df_t['skor'] = (((df_t['Sangat puas'] * 4) + (df_t['Puas'] * 3)
+#                      + (df_t['Tidak puas'] * 2) + (df_t['Sangat tidak puas'] * 1)) /
+#                     (df_t['Sangat puas'] + df_t['Puas'] + df_t['Tidak puas']
+#                      + df_t['Sangat tidak puas'])) * 25
+#     df_t.reset_index(inplace=True)
+#     return df_t
 
 @app.callback(Output('intermediate-value', 'children'),
               [
@@ -52,9 +51,10 @@ def transform_kuantitatif(df):
                   Input('dropdown_semester', 'value'),
               ])
 def sync_data(yearstart, yearend, semester):
-    df = select_by_semester(tablename=TABLENAME_KUANTITATIF, yearstart=yearstart, yearend=yearend, semester=semester)
-    df_t = transform_kuantitatif(df)
-    return df_t.to_json(date_format='iso', orient='split')
+    df = select_kuantitatif_table(tablename=TABLENAME_KUANTITATIF, yearstart=yearstart, yearend=yearend, semester=semester)
+    df = df.loc[df.QUESTIONCATEGORY != "Pembelajaran Daring"]
+    # df_t = transform_kuantitatif(df)
+    return df.to_json(date_format='iso', orient='split')
 
 
 @app.callback(Output('intermediate-value-kw', 'children'),
@@ -155,7 +155,11 @@ def plot_prosentase_matkul(json_data):
     df = pd.read_json(json_data, orient='split')
     data = df.groupby(['SCHOOLYEAR', 'SEMESTER', 'SUBJECTNAME']).mean()['skor'].reset_index()
     data['status'] = data.skor.apply(lambda x: 'diatas' if x >= 85 else 'dibawah')
-    res = data.status.value_counts().reset_index()
+    count = data.status.value_counts().reset_index()
+    res = pd.DataFrame()
+    res['index'] = ['diatas', 'dibawah']
+    res = pd.concat([res.set_index('index'), count.set_index('index')], axis=1).reset_index()
+    res = res.fillna(0)
     return go.Figure(
         [
             go.Pie(
@@ -211,7 +215,9 @@ def plot_prosentase_dosen(json_data):
     )
 
 
-@app.callback(Output('table-kepuasan-matkul', 'data'),
+@app.callback([Output('table-kepuasan-matkul', 'data'),
+                Output('table-kepuasan-matkul', 'tooltip_data'),
+                ],
               [Input('intermediate-value', 'children'),
                Input('table-kepuasan-matkul', "page_current"),
                Input('table-kepuasan-matkul', "page_size")])
@@ -219,17 +225,27 @@ def table_update_matkul(json_data, current, size):
     df = pd.read_json(json_data, orient='split')
     data = df.groupby(['SCHOOLYEAR', 'SEMESTER', 'SUBJECTNAME']).mean()['skor'].reset_index()
     data['status'] = data.skor.apply(lambda x: 'diatas' if x >= 85 else 'dibawah')
+    data = data.loc[data.status == 'dibawah']
     data['skor'] = data.skor.apply(lambda x: round(x, 2))
     data = data.sort_values(by=['skor', 'SCHOOLYEAR'], ascending=True)
     data['SEMESTER'] = data.SEMESTER.apply(lambda x: ' Ganjil' if x == 1 else ' Genap')
     res = data[['SCHOOLYEAR', 'SEMESTER', 'SUBJECTNAME', 'skor']]
     res.columns = ['TA', 'Semester', 'Matkul', 'Nilai']
-    return res.iloc[
-           current * size:(current + 1) * size
-           ].to_dict('records')
+    df_data = res.iloc[
+       current * size:(current + 1) * size
+       ]
+    tooltip_data=[
+    {
+    column: {'value': str(value), 'type': 'markdown'}
+        for column, value in row.items()
+            } for row in df_data.to_dict('rows')
+            ]
+    return df_data.to_dict('records'), tooltip_data
 
 
-@app.callback(Output('table-dosen-dibawah-km', 'data'),
+@app.callback([Output('table-dosen-dibawah-km', 'data'),
+                Output('table-dosen-dibawah-km', 'tooltip_data'),
+                ],
               [
                   Input('intermediate-value', 'children'),
                   Input('table-dosen-dibawah-km', 'page_current'),
@@ -239,15 +255,23 @@ def table_update_dosen(json_data, current, size):
     df = pd.read_json(json_data, orient='split')
     data = df.groupby(['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE']).mean()['skor'].reset_index()
     data['status'] = data.skor.apply(lambda x: 'diatas' if x >= 85 else 'dibawah')
+    data = data.loc[data.status == 'dibawah']
     data['skor'] = data.skor.apply(lambda x: round(x, 2))
     data = data.sort_values(by=['skor', 'SCHOOLYEAR'], ascending=True)
     data['SEMESTER'] = data.SEMESTER.apply(lambda x: ' Ganjil' if x == 1 else ' Genap')
     res = data[['SCHOOLYEAR', 'SEMESTER', 'LECTURERCODE', 'skor']]
     res.columns = ['TA', 'Semester', 'Dosen', 'Nilai']
     res['Dosen'] = res.Dosen.map(KODE_NAMA_LENGKAP_DOSEN)
-    return res.iloc[
-           current * size:(current + 1) * size
-           ].to_dict('records')
+    df_data = res.iloc[
+       current * size:(current + 1) * size
+       ]
+    tooltip_data=[
+    {
+    column: {'value': str(value), 'type': 'markdown'}
+        for column, value in row.items()
+            } for row in df_data.to_dict('rows')
+            ]
+    return df_data.to_dict('records'), tooltip_data
 
 
 @app.callback(Output('bar-aspek-terendah', 'figure'),
@@ -572,6 +596,7 @@ def table_dosen_negatif(json_data, page_current, page_size):
     data = data.pivot_table('ANSWER', ['period', 'LECTURERCODE'], 'LABEL').reset_index()
     data = data.fillna(0)
     data['pct-neg'] = data['negatif'] / (data['netral'] + data['positif'] + data['negatif']) * 100
+    data['pct-neg'] = data['pct-neg'].apply(lambda x : round(x, 2))
     data = data.sort_values(by=['pct-neg'], ascending=False)
     res = data[['period', 'LECTURERCODE', 'pct-neg']]
     res.columns = ['Periode', 'Dosen', 'Persentase']

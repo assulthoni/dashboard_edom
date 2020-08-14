@@ -177,45 +177,54 @@ BODY = dbc.Container(
                                                         ],
                                                     ),
                                                 ),
-                                                dbc.Card(
-                                                    dbc.CardBody(
-                                                        [
-                                                            html.H4("Dosen Dengan Sentiment Negatif",
-                                                                    className="card-title"),
-                                                            dt.DataTable(
-                                                                id="dosen-sentiment-negatif",
-                                                                data=[
-                                                                    {'Dosen': 'Albi Fitriansyah', 'Persentase': '45'},
-                                                                    {'Dosen': 'Rahmadita Andreswari',
-                                                                     'Persentase': '76'}
-                                                                ],
-                                                                columns=[
-                                                                    {'name': 'Periode', 'id': 'Periode'},
-                                                                    {'name': 'Dosen', 'id': "Dosen"},
-                                                                    {'name': 'Persentase', 'id': "Persentase"}
-                                                                ],
-                                                                style_data_conditional=[
-                                                                    {
-                                                                        'if': {
-                                                                            'column_id': 'Persentase',
-                                                                            'filter_query': '{Persentase} < 85.0'
-                                                                        },
-                                                                        'backgroundColor': 'tomato',
-                                                                        'color': 'white'
-                                                                    }
-                                                                ],
-                                                                page_current=0,
-                                                                page_size=10,
-                                                                page_action='custom'
-                                                            )
-                                                        ]
-                                                    )
-                                                ),
                                             ]
                                         ),
                                         # GRAPH_OVERVIEW
                                     ],
                                 )
+                            ],
+                            style={'marginBottom': 30}
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dbc.Card(
+                                            dbc.CardBody(
+                                                [
+                                                    html.H4("Dosen Dengan Sentiment Negatif",
+                                                            className="card-title"),
+                                                    dt.DataTable(
+                                                        id="dosen-sentiment-negatif",
+                                                        data=[
+                                                            {'Dosen': 'Albi Fitriansyah', 'Persentase': '45'},
+                                                            {'Dosen': 'Rahmadita Andreswari',
+                                                             'Persentase': '76'}
+                                                        ],
+                                                        columns=[
+                                                            {'name': 'Periode', 'id': 'Periode'},
+                                                            {'name': 'Dosen', 'id': "Dosen"},
+                                                            {'name': 'Persentase', 'id': "Persentase"}
+                                                        ],
+                                                        style_data_conditional=[
+                                                            {
+                                                                'if': {
+                                                                    'column_id': 'Persentase',
+                                                                    'filter_query': '{Persentase} < 85.0'
+                                                                },
+                                                                'backgroundColor': 'tomato',
+                                                                'color': 'white'
+                                                            }
+                                                        ],
+                                                        page_current=0,
+                                                        page_size=10,
+                                                        page_action='custom'
+                                                    )
+                                                ]
+                                            )
+                                        ),
+                                    ],
+                                    )
                             ],
                             style={'marginBottom': 30}
                         ),
